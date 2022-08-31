@@ -1,4 +1,5 @@
 import csv
+import itertools
 import re
 
 from PIL import Image, ImageDraw, ImageFont
@@ -58,6 +59,44 @@ def transform_value(original, destination):
         final_destination[index][1].append(value)
 
     return final_destination
+
+
+def merge_line(data):
+    final_data = []
+    for text, bboxes in data:
+        if len(bboxes) == 1:
+            final_data.append((text, bboxes))
+            continue
+
+        # sort by top
+        sorted_bboxes = sorted(bboxes, key=lambda coord: coord[1])
+
+        # group by top
+        grouped_bboxes = itertools.groupby(sorted_bboxes, key=lambda coord: coord[1])
+
+        final_bboxes = []
+        for group_name, group_list in grouped_bboxes:
+
+            # group_list is iterator, convert it to list first. We need
+            # use it multiple times and know the actual length
+            group_list = list(group_list)
+            if len(group_list) <= 1:
+                final_bboxes.append(group_list)
+                continue
+
+            # use top and bottom from any list
+            top = group_list[0][1]
+            bottom = group_list[0][3]
+
+            # left == min from left values
+            left = min([coord[0] for coord in group_list])
+            # right == max from right values
+            right = max([coord[2] for coord in group_list])
+            final_bboxes.append([left, top, right, bottom])
+
+        final_data.append((text, final_bboxes))
+
+    return final_data
 
 
 def generate_bounding_boxes(canvas, font, coordinate, line, space_right):
