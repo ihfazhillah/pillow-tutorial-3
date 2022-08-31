@@ -1,4 +1,5 @@
 import csv
+import re
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -23,6 +24,22 @@ def wrap_text(words, font, max_width):
 
     # lines
     return lines
+
+
+def split_text(text, special_words):
+    special_words_pattern = "|".join(special_words)
+    separators = "[,.?!]?"
+    text_pattern = f"(?P<result>({special_words_pattern}|[\w-]+){separators})"
+    pattern = re.compile(text_pattern)
+
+    final_texts = []
+    for match in re.finditer(pattern, text):
+        res = match.groupdict().get("result")
+        if res:
+            final_texts.append(res)
+
+    return final_texts
+
 
 
 def generate_bounding_boxes(canvas, font, coordinate, line, space_right):
