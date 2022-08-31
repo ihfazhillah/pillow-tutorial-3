@@ -115,7 +115,7 @@ def generate_bounding_boxes(canvas, font, coordinate, line, space_right):
 
 
 def main():
-    image = Image.new("RGB", (1080, 920), (100, 200, 150))
+    image = Image.new("RGBA", (1080, 920), (100, 200, 150, 255))
     canvas = ImageDraw.Draw(image)
     font = ImageFont.truetype("Raleway-VariableFont_wght.ttf", size=90)
 
@@ -142,6 +142,23 @@ def main():
         canvas.rectangle(bbox, outline="pink")
 
     image.save("image-with-bboxes.png")
+
+    overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    new_canvas = ImageDraw.Draw(overlay)
+    special_words = ["work quickly", "integrate systems more effectively"]
+    final_texts = split_text(text, special_words)
+    final_bboxes = transform_value(bboxes, final_texts)
+    final_bboxes = merge_line(final_bboxes)
+    for text, inner_bboxes in final_bboxes:
+        for inner_bbox in inner_bboxes:
+            new_canvas.rounded_rectangle(inner_bbox, radius=10, fill=(200, 100, 0, 127))
+
+            # kalau mau special words saja yang di highlight
+            # if re.match("|".join(special_words), text):
+            #     new_canvas.rounded_rectangle(inner_bbox, radius=10, fill=(200, 100, 0, 127))
+
+    image = Image.alpha_composite(image, overlay)
+    image.save("image-with-merged-bboxes.png")
 
     save_bboxes(bboxes)
 
