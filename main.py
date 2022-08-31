@@ -41,6 +41,24 @@ def split_text(text, special_words):
     return final_texts
 
 
+def transform_value(original, destination):
+    # dapatkan index tiap kata dari destination
+    word_and_index = []
+    for index, text in enumerate(destination):
+        for word in text.split(" "):
+            word_and_index.append((word, index))
+
+    # siapkan final destination, list of the pair of text and list
+    final_destination = [(text, []) for text in destination]
+
+    # map original data ke final destination
+    for (word, value), (word_dest, index) in zip(original, word_and_index):
+
+        # index 0 adalah text, 1 adalah list value
+        final_destination[index][1].append(value)
+
+    return final_destination
+
 
 def generate_bounding_boxes(canvas, font, coordinate, line, space_right):
     bboxes = []
